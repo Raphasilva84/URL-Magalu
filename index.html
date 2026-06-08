@@ -5,44 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Substituidor de URL Magalu</title>
     <style>
+        /* Variáveis de cor para facilitar a transição de temas */
+        :root {
+            --bg-color: #f4f4f9;
+            --container-bg: #fff;
+            --text-color: #333;
+            --border-color: #ccc;
+            --input-bg: #fff;
+            --btn-bg: #0086ff;
+            --btn-hover: #006bbd;
+        }
+
+        /* Classe que será ativada no Modo Noturno */
+        .dark-mode {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #444;
+            --input-bg: #2c2c2c;
+            --btn-bg: #005bb5;
+            --btn-hover: #004488;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        /* Botão de Modo Noturno no topo da tela */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .theme-toggle-btn:hover {
+            background-color: var(--border-color);
+        }
+
         .container {
-            background-color: #fff;
+            background-color: var(--container-bg);
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             width: 100%;
             max-width: 600px;
+            transition: background-color 0.3s;
         }
+
         h2 {
             margin-top: 0;
             color: #0086ff; 
         }
+
         label {
             font-weight: bold;
             display: block;
             margin-top: 15px;
             margin-bottom: 5px;
         }
+
         input[type="text"] {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ccc;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 14px;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
-        button {
-            background-color: #0086ff;
+
+        .action-btn {
+            background-color: var(--btn-bg);
             color: white;
             border: none;
             padding: 12px 20px;
@@ -52,38 +105,58 @@
             font-size: 16px;
             width: 100%;
             font-weight: bold;
+            transition: background-color 0.3s;
         }
-        button:hover {
-            background-color: #006bbd;
+
+        .action-btn:hover {
+            background-color: var(--btn-hover);
         }
-        /* Estilo opcional para destacar quando der erro */
+
         .erro {
-            color: #d93025 !important;
-            border-color: #d93025 !important;
+            color: #ff4d4d !important;
+            border-color: #ff4d4d !important;
             font-weight: bold;
         }
     </style>
 </head>
 <body>
 
+    <button class="theme-toggle-btn" id="themeBtn" onclick="toggleTheme()">🌙 Modo Noturno</button>
+
     <div class="container">
-        <h2>Formatador de URL Magalu</h2>
+        <h2>Formatador de URL</h2>
         
         <label for="inputUrl">Cole o endere&ccedil;o original aqui:</label>
         <input type="text" id="inputUrl" placeholder="Ex: https://www.magazineluiza.com.br/_next/data/.../bistequeiras/..." />
 
-        <button onclick="formatarUrl()">Substituir Vari&aacute;veis</button>
+        <button class="action-btn" onclick="formatarUrl()">Substituir Vari&aacute;veis</button>
 
         <label for="outputUrl">Endere&ccedil;o modificado:</label>
         <input type="text" id="outputUrl" readonly placeholder="O resultado aparecer&aacute; aqui..." />
     </div>
 
     <script>
+        // Função para alternar o modo noturno
+        function toggleTheme() {
+            const body = document.body;
+            const themeBtn = document.getElementById('themeBtn');
+            
+            // Alterna a classe 'dark-mode' no elemento <body>
+            body.classList.toggle('dark-mode');
+            
+            // Altera o texto e o ícone do botão dependendo do modo ativo
+            if (body.classList.contains('dark-mode')) {
+                themeBtn.innerHTML = '☀️ Modo Claro';
+            } else {
+                themeBtn.innerHTML = '🌙 Modo Noturno';
+            }
+        }
+
+        // Função principal de formatação da URL
         function formatarUrl() {
             let url = document.getElementById('inputUrl').value;
             let outputField = document.getElementById('outputUrl');
 
-            // Limpa o estilo de erro anterior (se houver)
             outputField.classList.remove('erro');
 
             if (url.trim() === "") {
@@ -91,17 +164,13 @@
                 return;
             }
 
-            // Verifica se a condição de substituição (existência de _next/data/) é atendida
             if (!url.includes('_next/data/')) {
                 outputField.value = "URL Inválida. Verificar DevTools.";
-                outputField.classList.add('erro'); // Adiciona classe CSS para deixar o texto vermelho
+                outputField.classList.add('erro'); 
                 return;
             }
 
-            // Substitui o bloco após _next/data/
             let urlModificada = url.replace(/_next\/data\/[^\/]+\//, '_next/data/[VARIAVEL(1)]/');
-            
-            // Mantém a substituição do número da página
             urlModificada = urlModificada.replace(/page=\d+/, 'page=#1');
 
             outputField.value = urlModificada;
